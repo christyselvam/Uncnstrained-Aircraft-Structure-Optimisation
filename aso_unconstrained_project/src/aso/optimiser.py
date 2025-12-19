@@ -178,7 +178,25 @@ class Optimiser:
             Number of performed iterations, -1 if `iteration >
             iteration_limit`.
         """
-        ...
+        # Constant step size 
+        alpha = 1e-3
+
+        for iteration in range(iteration_limit):
+            # Computing gradient of the objective at current point
+            grad = self.problem.compute_grad_objective(self.x)
+
+            # Checking convergence 
+            if self.converged(gradient=grad, constraints=None):
+                return iteration
+
+            # Steepest descent direction = negative gradient
+            direction = -grad
+
+            # In-place update of design variables 
+            self.x += alpha * direction
+
+        # If we reach here, we did not converge within the iteration limit
+        return -1
 
     def conjugate_gradients(
         self,
@@ -319,7 +337,21 @@ class Optimiser:
         ----------
         .. [1] J. Nocedal and S. J. Wright, Numerical Optimization. Springer New York, 2006. doi: https://doi.org/10.1007/978-0-387-40065-5.
         """
-        ...
+        if not np.all(np.isfinite(gradient)):
+            return False
+
+        # Infinity norm of the gradient = max absolute component
+        grad_inf_norm = np.max(np.abs(gradient))
+        if grad_inf_norm > gradient_tol:
+            return False
+
+        if constraints is not None:
+            # Same idea for constraints 
+            constr_inf_norm = np.max(np.abs(constraints))
+            if constr_inf_norm > constraint_tol:
+                return False
+
+        return True
 
     def line_search(
         self,

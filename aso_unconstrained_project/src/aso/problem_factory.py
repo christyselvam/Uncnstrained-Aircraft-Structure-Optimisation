@@ -177,12 +177,24 @@ class ProblemFactory:
                 "Rosenbrock problem not yet implemented for more than two variables."
             )
 
+        # Standard 2D Rosenbrock:
+        # f(x1, x2) = (a - x1)^2 + b (x2 - x1^2)^2
         def objective(x: NDArray) -> float:
-            ...
+            x1 = x[0]
+            x2 = x[1]
+            return (a - x1) ** 2 + b * (x2 - x1**2) ** 2
 
+        # Analytic gradient of Rosenbrock
+        # df/dx1 = -2(a - x1) - 4 b x1 (x2 - x1^2)
+        # df/dx2 =  2 b (x2 - x1^2)
         def grad_objective(x: NDArray) -> NDArray:
-            ...
+            x1 = x[0]
+            x2 = x[1]
+            df_dx1 = -2 * (a - x1) - 4 * b * x1 * (x2 - x1**2)
+            df_dx2 = 2 * b * (x2 - x1**2)
+            return numpy.array([df_dx1, df_dx2])
 
+        # Optional circular inequality constraint: ||x|| - radius <= 0
         def g1(x: NDArray) -> float:
             return numpy.linalg.norm(x) - radius
 
@@ -192,6 +204,7 @@ class ProblemFactory:
             i_constraints=[g1] if constrained else None,
             minima=[numpy.array([a, a**2])],
         )
+
 
     @staticmethod
     def rastrigin(n: int = 2, a: float = 10) -> OptimisationProblem:
